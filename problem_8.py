@@ -1,78 +1,57 @@
 
-#variant 8 Server
-class ServerRack:
-    def __init__(self , name , total_slots , used_slots = 0) :
-        self._name = name
-        self.total_slots = total_slots
-        self.used_slots = used_slots
 
-    @property
-    def name(self):
-        return self._name
-    
-    @property
-    def total_slots(self):
-        return self._total_slots
-    
-    @total_slots.setter
+#Variant 8: Crypto Portfolio Holding
 
-    def total_slots(self,amount):
-        if amount < 1 :
-            raise ValueError("Total slots must be at least 1")
-        self._total_slots = amount
+class CryptoHolding:
+    def __init__(self, token_name,usd_price,coin_amount):
+        self.token_name =token_name
+        self.usd_price =usd_price
+        self.coin_amount =coin_amount
 
-    @property
-    def used_slots(self):
-        return self._used_slots
-    
-    @used_slots.setter
+    def __str__(self):
+        return f"{self.token_name}: {self.coin_amount} coin(s) at ${self.usd_price}"
 
-    def used_slots(self , amount):
-        if amount < 0 :
-            raise ValueError("Used slots cannot be negative")
-        
-        if amount > self.total_slots :
-            raise ValueError("Used slots cannot exceed total slots")
-        self._used_slots = amount
+    def __repr__(self):
+        return f"CryptoHolding('{self.token_name}', {self.usd_price}, {self.coin_amount})"
 
-    @property
-    def free_slots(self):
-        return self.total_slots - self.used_slots
-    
-    @property
-    def usage_rate(self):
-        return round(self.used_slots / self.total_slots * 100 , 1)
-    
-    def install(self , servers):
-        if servers <= 0 :
-            raise ValueError("Number of servers must be positive")
-        if servers > self.free_slots :
-            raise ValueError("Not enough free slots")
-        
-        self.used_slots += servers
+    def __add__(self, other):
+        if isinstance(other, CryptoHolding):
+            if self.token_name ==other.token_name:
+                return CryptoHolding(
+                    self.token_name,
+                    self.usd_price,
+                    self.coin_amount +other.coin_amount
+                )
+            else:
+                return NotImplemented
 
-    def remove(self,servers):
-        if servers <= 0 :
-            raise ValueError("Number of servers must be positive")
-        if servers > self.used_slots :
-            raise ValueError("Cannot remove more than installed")
-        self.used_slots -= servers
+        elif isinstance(other, int):
+            return CryptoHolding(
+                self.token_name,
+                self.usd_price,
+                self.coin_amount +other
+            )
 
-r = ServerRack("Rack-A1", 42)
-print(r.name , r.free_slots , r.usage_rate)
+        else:
+            return NotImplemented
 
-r.install(30)
-print(r.used_slots , r.usage_rate)
+    def __eq__(self, other):
+        if isinstance(other, CryptoHolding):
+            return self.token_name == other.token_name and self.usd_price == other.usd_price
+        return NotImplemented
 
-r.remove(6)
-print(r.free_slots)
+    def __bool__(self):
+        return self.coin_amount > 0
 
-try :
-    r.install(20)
-except ValueError as e :
-    print(e)
 
-try :
-    r.name = "X"
-except AttributeError:
-    print("Cannot change rack name")
+holding1 = CryptoHolding("Bitcoin",65000.0, 2)
+holding2 = CryptoHolding("Bitcoin", 65000.0, 1)
+holding3 = CryptoHolding("Ethereum",3500.0, 0)
+
+print(str(holding1))
+print(repr(holding1))
+print(holding1 + holding2)
+print(holding1 + 4)
+print(holding1 == holding2)
+print(bool(holding1))
+print(bool(holding3))
